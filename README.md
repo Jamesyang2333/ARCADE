@@ -70,7 +70,7 @@ JOIN reviews b
 ON SEMANTIC_JOIN("Does the customer review {b.review_text} contradicts the description {a.text}?", b.review_text, a.text);
 ```
 
-## 📖 Example Queries
+## 📖 Hybrid & Continuous Queries
 **Hybrid Search Query**  
 ```sql
 SELECT t.content
