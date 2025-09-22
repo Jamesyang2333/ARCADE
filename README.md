@@ -105,8 +105,8 @@ SYNC 60 seconds;
 ### Dependencies
 - RocksDB **9.8.0**
 - MySQL **8.0.32**
-- Boost ()
-- FAISS (for vector indexing)
+- Boost (for MySQL build)
+- FAISS (for vector features)
 
 ### Compilation
 ```
