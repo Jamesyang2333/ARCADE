@@ -1,24 +1,75 @@
-# ARCADE: Real-Time Hybrid and Continuous Query Processing across Diverse Data Modalities
+# ARCADE
 
 [![Paper](https://img.shields.io/badge/paper-Arxiv-red)](link-to-paper)  
 
-ARCADE is a **real-time multimodal data system** that supports **hybrid** and **continuous** query processing across diverse data types, including **vector, spatial, text, and relational data**.  
+ARCADE is a **real-time multimodal data system** that supports **hybrid**, **continuous** and **semantic** query processing across diverse data types, including **text, image, vector, spatial, and relational data**.  
 
-Built on **RocksDB** (storage) and **MySQL** (query engine), ARCADE introduces:  
-- A **unified disk-based secondary index** framework for multimodal data.  
-- A **cost-based query optimizer** for expressive hybrid queries.  
-- An **incremental materialized view** framework for efficient continuous queries.
-
-ARCADE achieves up to **7.4× faster query performance** compared to leading real-time multimodal data systems on read-heavy workloads.
-
-## ✨ Key Features
+### ✨ Key Features
 - **Multimodal Support**: Text, image, vector, spatial, and relational data.  
 - **Unified Secondary Indexing**: Efficient disk-based indexes for vector, spatial, and text data, integrated with LSM-tree storage.  
-- **Hybrid Query Optimizer**: Extends MySQL’s cost-based optimizer to support **Hybrid Search Queries** and **Hybrid Nearest Neighbor (NN) Queries** that combine vector, spatial, text, and relational ranking and filters.  
-- **Continuous Queries**: Supports both **SYNC** (time-based) and **ASYNC** (event-driven) continuous queries using incremental materialized views.  
-- **Semantic Operators**  
+- **Hybrid Query Optimizer**: Extends MySQL’s cost-based optimizer to support hybrid queries with joint ranking and filters over vector, spatial, text, and relational attributes.  
+- **Continuous Queries**: **SYNC** (time-based) and **ASYNC** (event-driven) continuous queries using incremental materialized views.  
+- **Semantic Operators**: Allows users to embed natural language intent directly into SQL, enabling filtering, transformation, extraction, joining, and ranking with LLM-powered semantic analytics.
 
 For details, please refer to the [paper](./arcade_v2.pdf).
+
+## 🎉 News
+- [2025-09] 🔥 ARCADE now supports a set of [semantic operators](#-semantic-operators) for AI-powered query processing.
+
+## 🧠 Semantic Operators
+
+ARCADE extends SQL with **five semantic operators** to enable natural language reasoning over your data.  
+These operators leverage vector embeddings and LLM-backed processing to filter, extract, and rank results beyond exact keyword matching.
+
+### Available Operators
+
+1. **`SEMANTIC_FILTER`** – Filter rows based on a natural language condition.  
+2. **`SEMANTIC_MAP`** – Apply transformation to each row.  
+3. **`SEMANTIC_EXTRACT`** – Extract structured information from unstructured text.  
+4. **`SEMANTIC_JOIN`** – Join two tables based on semantic predicate over text columns.  
+5. **`SEMANTIC_RANK`** – Rank rows by semantic relevance to a query prompt.
+
+### Usage Examples
+
+#### 1. Semantic Filter
+Filter rows using natural language conditions:
+```sql
+SELECT id, text
+FROM poi 
+WHERE SEMANTIC_FILTER_SINGLE_COL('Is {poi.text} describing a seafood restaurant?', text) = 1;
+```
+
+#### 2. Semantic Map
+Transform unstructured text into new values:
+```sql
+SELECT id, SEMANTIC_MAP('Write a slogan based on {poi.text}', text)
+FROM poi;
+```
+
+#### 3. Semantic Extract
+Extract structured values from text fields:
+```sql
+SELECT id, SEMANTIC_MAP('Extract the recommended food from {poi.text}', text)
+FROM poi;
+```
+
+#### 4. Semantic Rank
+Rank rows by semantic similarity to a natural language query:
+```sql
+SELECT id, text, SEMANTIC_RANK(text_embedding, 'Retrieve affordable coffee spot suitable university students') AS dis
+FROM poi
+ORDER BY dis
+LIMIT 10;
+```
+
+#### 5. Semantic Join
+```sql
+SELECT a.id, b.review_id
+FROM poi a
+JOIN reviews b
+ON SEMANTIC_JOIN("Does the customer review {b.review_text} contradicts the description {a.text}?", b.review_text, a.text);
+```
+
 ## 📖 Example Queries
 **Hybrid Search Query**  
 ```sql
@@ -49,14 +100,6 @@ GROUP BY c.id
 ORDER BY count DESC
 SYNC 60 seconds;
 ```
-
-**Semantic query**
-```sql 
-SELECT id, text
-from poi 
-where SEMANTIC_FILTER_SINGLE_COL('Is {poi.text} describing a restaurant?', text) = 1;
-```
-
 
 ## ⚙️ Build Instructions
 ### Dependencies
