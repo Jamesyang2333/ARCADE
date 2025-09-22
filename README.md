@@ -148,11 +148,9 @@ bin/mysqld --defaults-file=[build_dir_path]/usr/local/mysql/my.cnf &
 bin/mysql -u root -p --port=3306
 ```
 
-Vector index requires loading pre-trained centroids from local csv. The pre-trained centroid files can be found in [`./vector_index_centroids`](https://github.com/Jamesyang2333/spatial-x-db/edit/vector-data/vector_index_centroids). We default use the `centroids_300.csv` by default. If you are using other centroid configurations, please edit path configuration in `spatial-x-db/rocksdb/table/block_based/block_based_table_factory.h`, function `SetIndexOptions()`
-
 ## 📊 Example Usage
 **Schema Definition**  
-Tables are stored in separate column families using COMMENT 'cfname=...'.
+Tables are stored in separate column families using `COMMENT 'cfname=...'`.
 ```sql
 CREATE TABLE `poi` (
   `coordinate` point NOT NULL SRID 4326,
