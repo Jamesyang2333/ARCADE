@@ -9,7 +9,7 @@ ARCADE is a **real-time multimodal data system** that supports **hybrid**, **con
 - **Unified Secondary Indexing**: Efficient disk-based indexes for vector, spatial, and text data, integrated with LSM-tree storage.  
 - **Hybrid Query Optimizer**: Extends MySQL’s cost-based optimizer to support hybrid queries with joint ranking and filters over vector, spatial, text, and relational attributes.  
 - **Continuous Queries**: **SYNC** (time-based) and **ASYNC** (event-driven) continuous queries using incremental materialized views.  
-- **Semantic Operators**: Allows users to embed natural language intent directly into SQL, enabling filtering, transformation, extraction, joining, and ranking with LLM-powered semantic analytics.
+- **Semantic Operators**: Allows users to embed natural language intent directly into SQL, enabling filtering, transformation, extraction, joining, and ranking with AI-powered semantic analytics.
 
 For details, please refer to the [paper](./arcade_v2.pdf).
 
@@ -19,7 +19,7 @@ For details, please refer to the [paper](./arcade_v2.pdf).
 ## 🧠 Semantic Operators
 
 ARCADE extends SQL with **five semantic operators** to enable natural language reasoning over your data.  
-These operators leverage vector embeddings and LLM-backed processing to filter, extract, and rank results beyond exact keyword matching.
+These operators leverage vector embeddings and LLM-backed processing to filter, extract, and rank results beyond exact keyword matching or simple similarity search.
 
 ### Available Operators
 
