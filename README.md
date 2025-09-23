@@ -16,91 +16,6 @@ For details, please refer to the [paper](./arcade_v2.pdf).
 ## 🎉 News
 - [2025-09] 🔥 ARCADE now supports a set of [semantic operators](#-semantic-operators) for AI-powered query processing.
 
-## 🧠 Semantic Operators
-
-ARCADE extends SQL with **five semantic operators** to enable natural language reasoning over your data.  
-These operators leverage vector embeddings and LLM-backed processing to filter, extract, and rank results beyond exact keyword matching or simple similarity search.
-
-### Available Operators
-
-1. **`SEMANTIC_FILTER`** – Filter rows based on a natural language condition.  
-2. **`SEMANTIC_MAP`** – Apply transformation to each row.  
-3. **`SEMANTIC_EXTRACT`** – Extract structured information from unstructured text.  
-4. **`SEMANTIC_JOIN`** – Join two tables based on semantic predicate over text columns.  
-5. **`SEMANTIC_RANK`** – Rank rows by semantic relevance to a query prompt.
-
-### Usage Examples
-
-#### 1. Semantic Filter
-Filter rows using natural language conditions:
-```sql
-SELECT id, text
-FROM poi 
-WHERE SEMANTIC_FILTER_SINGLE_COL('Is {poi.text} describing a seafood restaurant?', text) = 1;
-```
-
-#### 2. Semantic Map
-Transform unstructured text into new values:
-```sql
-SELECT id, SEMANTIC_MAP('Write a slogan based on {poi.text}', text)
-FROM poi;
-```
-
-#### 3. Semantic Extract
-Extract structured values from text fields:
-```sql
-SELECT id, SEMANTIC_MAP('Extract the recommended food from {poi.text}', text)
-FROM poi;
-```
-
-#### 4. Semantic Rank
-Rank rows by semantic similarity to a natural language query:
-```sql
-SELECT id, text, SEMANTIC_RANK(text_embedding, 'Retrieve affordable coffee spot suitable university students') AS dis
-FROM poi
-ORDER BY dis
-LIMIT 10;
-```
-
-#### 5. Semantic Join
-```sql
-SELECT a.id, b.review_id
-FROM poi a
-JOIN reviews b
-ON SEMANTIC_JOIN("Does the customer review {b.review_text} contradicts the description {a.text}?", b.review_text, a.text);
-```
-
-## 📖 Hybrid & Continuous Queries
-**Hybrid Search Query**  
-```sql
-SELECT t.content
-FROM tweets t
-WHERE L2_Distance(t.embedding, LLM(@query_text)) < @threshold
-  AND t.content LIKE '%keyword%'
-  AND ST_Contains(t.coordinate, @region);
-```
-
-**Hybrid NN Query**  
-```sql
-SELECT t.content
-FROM tweets t
-WHERE t.time BETWEEN @start_time AND @end_time
-ORDER BY ST_Distance(t.coordinate, @location)
-       + lambda * VECTOR_L2(t.text_embedding, LLM(@query_text))
-LIMIT k;
-```
-
-**Continuous Query**
-```sql
-SELECT c.id, c.name, COUNT(*) as count
-FROM tweets t
-JOIN City c ON ST_Contains(t.coordinate, c.geom)
-WHERE L2_DISTANCE(t.embedding, LLM(@query_text)) < @threshold
-GROUP BY c.id
-ORDER BY count DESC
-SYNC 60 seconds;
-```
-
 ## ⚙️ Build Instructions
 ### Dependencies
 - RocksDB **9.8.0**
@@ -136,7 +51,8 @@ port=3306
 Set environment variables:
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:[root_dir_path]/faiss/faiss
-export OPENAI_API_KEY=“”
+# API key required for semantic operators
+export OPENAI_API_KEY=“”    
 ```
 
 Initialize and start MySQL:
@@ -180,6 +96,99 @@ source load_poi.sql;
 shutdown;
 ```
 (Reopen the DB to flush data to disk.)
+
+## 🧠 Semantic Operators
+
+ARCADE extends SQL with **five semantic operators** to enable natural language reasoning over your data. These operators leverage vector embeddings and LLM-backed processing to filter, extract, and rank results beyond exact keyword matching or simple similarity search.
+
+### Available Operators
+
+1. **`SEMANTIC_FILTER`** – Filter rows based on a natural language condition.  
+2. **`SEMANTIC_MAP`** – Apply transformation to each row.  
+3. **`SEMANTIC_EXTRACT`** – Extract structured information from unstructured text.  
+4. **`SEMANTIC_JOIN`** – Join two tables based on semantic predicate over text columns.  
+5. **`SEMANTIC_RANK`** – Rank rows by semantic relevance to a query prompt.
+
+### Usage Examples
+
+#### 1. Semantic Filter
+Filter rows using natural language conditions:
+```sql
+-- Identify patient reports that mention diabetes
+SELECT report_id, text
+FROM patient_reports
+WHERE SEMANTIC_FILTER_SINGLE_COL('Does {patient_reports.text} indicate the patient has diabetes?', text) = 1;
+```
+
+#### 2. Semantic Map
+Transform unstructured text into new values:
+```sql
+SELECT candidate_id,
+       SEMANTIC_MAP('Summarize candidate's key qualifications for the research scientist role from {resumes.content}', content) AS summary
+FROM resumes;
+```
+
+#### 3. Semantic Extract
+Extract structured values from text fields:
+```sql
+-- Extract datasets mentioned in machine learning papers
+SELECT paper_id,
+       SEMANTIC_EXTRACT('List the datasets used in {papers.abstract}', abstract) AS datasets
+FROM papers;
+```
+
+#### 4. Semantic Rank
+Rank rows by semantic similarity to a natural language query:
+```sql
+-- Rank climate news articles by relevance to policy impacts
+SELECT id, title,
+       SEMANTIC_RANK(content_embedding, 'Retrive news articles with climate change policy impact') AS score
+FROM news_articles
+ORDER BY score DESC
+LIMIT 10;
+```
+`SEMANTIC_RANK` use the openai `text-embedding-3-small` model by default. 
+Make sure the embedding column values is also generated with the same model.
+
+#### 5. Semantic Join
+```sql
+-- Match user projects with relevant research papers
+SELECT projects.id, papers.id
+FROM projects
+JOIN papers
+  ON SEMANTIC_JOIN('Is {projects.description} relevant to {papers.abstract}?', projects.description, papers.abstract) = 1;
+```
+
+## 📖 Hybrid & Continuous Queries
+**Hybrid Search Query**  
+```sql
+SELECT t.content
+FROM tweets t
+WHERE L2_Distance(t.embedding, LLM(@query_text)) < @threshold
+  AND t.content LIKE '%keyword%'
+  AND ST_Contains(t.coordinate, @region);
+```
+
+**Hybrid NN Query**  
+```sql
+SELECT t.content
+FROM tweets t
+WHERE t.time BETWEEN @start_time AND @end_time
+ORDER BY ST_Distance(t.coordinate, @location)
+       + lambda * VECTOR_L2(t.text_embedding, LLM(@query_text))
+LIMIT k;
+```
+
+**Continuous Query**
+```sql
+SELECT c.id, c.name, COUNT(*) as count
+FROM tweets t
+JOIN City c ON ST_Contains(t.coordinate, c.geom)
+WHERE L2_DISTANCE(t.embedding, LLM(@query_text)) < @threshold
+GROUP BY c.id
+ORDER BY count DESC
+SYNC 60 seconds;
+```
 
 ## 📚 Citation
 
