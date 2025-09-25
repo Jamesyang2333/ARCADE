@@ -11,7 +11,7 @@ ARCADE is a **real-time multimodal data system** that supports **hybrid**, **con
 - **Continuous Queries**: **SYNC** (time-based) and **ASYNC** (event-driven) continuous queries using incremental materialized views.  
 - **Semantic Operators**: Allows users to embed natural language intent directly into SQL, enabling filtering, transformation, extraction, joining, and ranking with AI-powered semantic analytics.
 
-For details, please refer to the [paper](./arcade_v2.pdf).
+For details, please refer to the [paper](https://arxiv.org/pdf/2509.19757).
 
 ## 🎉 News
 - [2025-09] 🔥 ARCADE now supports a set of [semantic operators](#-semantic-operators) for AI-powered query processing.
@@ -194,11 +194,14 @@ SYNC 60 seconds;
 
 If you use ARCADE in academic work, please cite:
 ```
-@article{arcade2025,
-  title   = {ARCADE: A Real-Time Data System for Hybrid and Continuous Query Processing across Diverse Data Modalities},
-  author  = {Yang, Jingyi and Mo, Songsong and Shi, Jiachen and Yu, Zihao and Shi, Kunhao and Ding, Xuchen and Cong, Gao},
-  journal = {arXiv preprint arXiv:xxxx.xxxx},
-  year    = {2025}
+@misc{yang2025arcaderealtimedatahybrid,
+      title={ARCADE: A Real-Time Data System for Hybrid and Continuous Query Processing across Diverse Data Modalities}, 
+      author={Jingyi Yang and Songsong Mo and Jiachen Shi and Zihao Yu and Kunhao Shi and Xuchen Ding and Gao Cong},
+      year={2025},
+      eprint={2509.19757},
+      archivePrefix={arXiv},
+      primaryClass={cs.DB},
+      url={https://arxiv.org/abs/2509.19757}, 
 }
 ```
 
